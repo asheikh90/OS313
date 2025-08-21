@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Moon, Sun, Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth/auth-context'
 import { track, EVENTS } from '@/utils/analytics'
 
 interface NavbarProps {
@@ -15,7 +14,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     { name: 'Paths', href: '#paths' },
     { name: 'Stories', href: '#stories' },
     { name: 'FAQ', href: '#faq' },
+    { name: 'Dashboard', href: '/dashboard' },
   ]
 
   const scrollToWaitlist = () => {
@@ -105,19 +104,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                   {item.name}
                 </motion.a>
               ))}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: navItems.length * 0.1 }}
-                whileHover={{ y: -2 }}
-              >
-                <Link
-                  href={user ? "/dashboard" : "/auth"}
-                  className="text-navy-700 dark:text-navy-300 hover:text-primary-500 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium transition-colors duration-300"
-                >
-                  Dashboard
-                </Link>
-              </motion.div>
             </div>
           </div>
 
@@ -221,23 +207,10 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                   {item.name}
                 </motion.a>
               ))}
-              <motion.div
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: navItems.length * 0.1 }}
-              >
-                <Link
-                  href={user ? "/dashboard" : "/auth"}
-                  className="text-navy-700 dark:text-navy-300 hover:text-primary-500 dark:hover:text-primary-400 block px-3 py-2 text-base font-medium transition-colors duration-300"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </motion.div>
               <motion.button
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: (navItems.length + 1) * 0.1 }}
+                transition={{ delay: navItems.length * 0.1 }}
                 onClick={() => {
                   scrollToWaitlist()
                   setIsMobileMenuOpen(false)

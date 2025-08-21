@@ -21,6 +21,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
     { name: 'Paths', href: '#paths' },
     { name: 'Stories', href: '#stories' },
     { name: 'FAQ', href: '#faq' },
+		{ name: 'Dashboard', href: '/dashboard' },
   ]
 
   const scrollToWaitlist = () => {

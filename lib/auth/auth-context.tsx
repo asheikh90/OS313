@@ -1,64 +1,56 @@
 'use client'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
-
-interface User {
-  id: string
-  email: string
-  createdAt: string
-}
-
-interface AuthContextType {
-  user: User | null
-  login: (email: string, code: string) => Promise<boolean>
+type User = { email: string } | null
+type Ctx = {
+  user: User
+  login: (email: string, code: string) => Promise<void>
   logout: () => void
-  isLoading: boolean
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthCtx = createContext<Ctx | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User>(null)
 
+  // load from localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem('os313-user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
-    setIsLoading(false)
+    try {
+      const raw = localStorage.getItem('os313_user')
+      if (raw) setUser(JSON.parse(raw))
+    } catch {}
   }, [])
 
-  const login = async (email: string, code: string): Promise<boolean> => {
-    if (code === '424242') {
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        email,
-        createdAt: new Date().toISOString()
-      }
-      setUser(newUser)
-      localStorage.setItem('os313-user', JSON.stringify(newUser))
-      return true
-    }
-    return false
+  async function login(email: string, code: string) {
+    // DUMMY RULE: any email, code must be 424242
+    if (code !== '424242') throw new Error('Invalid code')
+    const u = { email }
+    setUser(u)
+    localStorage.setItem('os313_user', JSON.stringify(u))
   }
 
-  const logout = () => {
+  function logout() {
     setUser(null)
-    localStorage.removeItem('os313-user')
+    localStorage.removeItem('os313_user')
   }
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthCtx.Provider value={{ user, login, logout }}>{children}</AuthCtx.Provider>
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+  const ctx = useContext(AuthCtx)
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  return ctx
+}
+
+// Protect dashboard segment
+export function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+  if (!user) {
+    if (typeof window !== 'undefined') window.location.href = '/auth'
+    return null
   }
-  return context
+  return <>{children}</>
 }
